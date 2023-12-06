@@ -1,9 +1,16 @@
 const path = require('path');
 const CleanPlugin = require('clean-webpack-plugin');
+// const Dotenv = require('dotenv-webpack');
+const webpack = require('webpack');
+const dotenv = require('dotenv')
+dotenv.config({ path: require('find-config')('.env') });
+
+// const isProduction = NODE_ENV === 'production';
+const dotenvFilename = '.env';
 
 module.exports = {
     entry: './src/app.ts',
-    mode: 'development',
+    mode: 'production',
     devServer: {
         static: [
             {
@@ -15,7 +22,7 @@ module.exports = {
         filename: 'bundle.js',
         path: path.join(__dirname, 'dist')
     },
-    module : {
+    module: {
         rules: [
             {
                 test: /\.ts$/,
@@ -25,9 +32,20 @@ module.exports = {
         ]
     },
     resolve: {
-        extensions: ['.ts', '.js']
+        extensions: ['.ts', '.js'],
+        fallback: {
+            "crypto": false,
+            "os": false,
+            "path": require.resolve("path-browserify")
+        }
     },
     plugins: [
-        new CleanPlugin.CleanWebpackPlugin()
+        new CleanPlugin.CleanWebpackPlugin(),
+        new webpack.ProvidePlugin({
+            process: 'process/browser',
+        }),
+        new webpack.DefinePlugin({
+            'process.env': JSON.stringify(process.env)
+        })
     ]
 }
